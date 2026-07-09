@@ -36,10 +36,6 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: 'Invalid email or password' });
     }
 
-    if (!rows[0].password_hash) {
-      return reply.status(401).send({ error: 'Этот аккаунт создан через Яндекс. Войдите через Яндекс.' });
-    }
-
     const match = await bcryptjs.compare(password, rows[0].password_hash);
     if (!match) {
       return reply.status(401).send({ error: 'Invalid email or password' });
