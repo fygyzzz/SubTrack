@@ -1,0 +1,44 @@
+@startuml
+!define table(x) entity x << (T, #white) >>
+
+table(users) {
+  id: SERIAL PK
+  email: VARCHAR(255) UNIQUE
+  password_hash: VARCHAR(255)
+  name: VARCHAR(255)
+  created_at: TIMESTAMP
+}
+
+table(categories) {
+  id: SERIAL PK
+  name: VARCHAR(100)
+  icon: VARCHAR(50)
+}
+
+table(subscriptions) {
+  id: SERIAL PK
+  user_id: INTEGER FK
+  category_id: INTEGER FK
+  name: VARCHAR(255)
+  amount: DECIMAL(12,2)
+  currency: VARCHAR(3)
+  period: VARCHAR(10)
+  next_payment_date: DATE
+  review_flag: BOOLEAN
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+table(notifications) {
+  id: SERIAL PK
+  user_id: INTEGER FK
+  subscription_id: INTEGER FK
+  sent_at: TIMESTAMP
+  type: VARCHAR(20)
+}
+
+users ||--o{ subscriptions
+categories ||--o{ subscriptions
+users ||--o{ notifications
+subscriptions ||--o{ notifications
+@enduml
