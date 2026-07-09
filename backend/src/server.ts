@@ -1,6 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { env } from './config.js';
 import { authRoutes } from './routes/auth.js';
 import { categoryRoutes } from './routes/categories.js';
@@ -21,6 +23,19 @@ const app = Fastify({ logger: true });
 
 await app.register(cors, { origin: env.FRONTEND_URL, credentials: true });
 await app.register(jwt, { secret: env.JWT_SECRET });
+
+await app.register(swagger, {
+  openapi: {
+    info: { title: 'SubTrack API', version: '1.0.0', description: 'Управление подписками и регулярными платежами' },
+    servers: [{ url: 'http://localhost:3001' }],
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      },
+    },
+  },
+});
+await app.register(swaggerUi, { routePrefix: '/docs' });
 
 app.decorate('authenticate', async (request: any, reply: any) => {
   try {

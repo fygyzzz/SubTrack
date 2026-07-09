@@ -4,8 +4,21 @@ import { pool } from '../db/pool.js';
 import { registerSchema, loginSchema, validate } from '../validation.js';
 import { checkAndNotifyForUser } from '../scheduler.js';
 
+const bodyJsonSchema = (properties: Record<string, any>, required: string[] = []) => ({
+  type: 'object', properties, required, additionalProperties: false,
+});
+
 export async function authRoutes(app: FastifyInstance) {
-  app.post('/register', async (request: any, reply: any) => {
+  app.post('/register', {
+    schema: {
+      body: bodyJsonSchema({
+        email: { type: 'string', format: 'email', description: 'Email' },
+        password: { type: 'string', minLength: 6, description: 'Пароль (минимум 6 символов, буква + цифра)' },
+        name: { type: 'string', minLength: 2, maxLength: 100, description: 'Имя' },
+      }, ['email', 'password', 'name']),
+      response: { 200: { type: 'object', properties: { token: { type: 'string' }, user: { type: 'object' } } } },
+    },
+  }, async (request: any, reply: any) => {
     const data = validate(registerSchema, request.body, reply);
     if (!data) return;
     const { email, password, name } = data;
@@ -26,7 +39,15 @@ export async function authRoutes(app: FastifyInstance) {
     return { token, user: rows[0] };
   });
 
-  app.post('/login', async (request: any, reply: any) => {
+  app.post('/login', {
+    schema: {
+      body: bodyJsonSchema({
+        email: { type: 'string', format: 'email', description: 'Email' },
+        password: { type: 'string', description: 'Пароль' },
+      }, ['email', 'password']),
+      response: { 200: { type: 'object', properties: { token: { type: 'string' }, user: { type: 'object' } } } },
+    },
+  }, async (request: any, reply: any) => {
     const data = validate(loginSchema, request.body, reply);
     if (!data) return;
     const { email, password } = data;
@@ -46,7 +67,13 @@ export async function authRoutes(app: FastifyInstance) {
     return { token, user: { id: rows[0].id, email: rows[0].email, name: rows[0].name } };
   });
 
-  app.get('/me', { onRequest: [app.authenticate] }, async (request: any) => {
+  app.get('/me', {
+    schema: {
+      security: [{ bearerAuth: [] }],
+      response: { 200: { type: 'object', properties: { id: { type: 'number' }, email: { type: 'string' }, name: { type: 'string' } } } },
+    },
+    onRequest: [app.authenticate],
+  }, async (request: any) => {
     return request.user;
   });
 }

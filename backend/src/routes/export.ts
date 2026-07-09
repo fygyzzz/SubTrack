@@ -35,7 +35,19 @@ function buildWhere(userId: number, startDate?: string, endDate?: string) {
 }
 
 export async function exportRoutes(app: FastifyInstance) {
-  app.get('/csv', { onRequest: [app.authenticate] }, async (request: any, reply: any) => {
+  app.get('/csv', {
+    schema: {
+      security: [{ bearerAuth: [] }],
+      querystring: {
+        type: 'object',
+        properties: {
+          startDate: { type: 'string', format: 'date', description: 'Начало периода (YYYY-MM-DD)' },
+          endDate: { type: 'string', format: 'date', description: 'Конец периода (YYYY-MM-DD)' },
+        },
+      },
+    },
+    onRequest: [app.authenticate],
+  }, async (request: any, reply: any) => {
     const { startDate, endDate } = request.query as { startDate?: string; endDate?: string };
     const { where, params } = buildWhere(request.user.id, startDate, endDate);
 
@@ -78,7 +90,19 @@ export async function exportRoutes(app: FastifyInstance) {
     return csv;
   });
 
-  app.get('/pdf', { onRequest: [app.authenticate] }, async (request: any, reply: any) => {
+  app.get('/pdf', {
+    schema: {
+      security: [{ bearerAuth: [] }],
+      querystring: {
+        type: 'object',
+        properties: {
+          startDate: { type: 'string', format: 'date', description: 'Начало периода (YYYY-MM-DD)' },
+          endDate: { type: 'string', format: 'date', description: 'Конец периода (YYYY-MM-DD)' },
+        },
+      },
+    },
+    onRequest: [app.authenticate],
+  }, async (request: any, reply: any) => {
     const { startDate, endDate } = request.query as { startDate?: string; endDate?: string };
     const { where, params } = buildWhere(request.user.id, startDate, endDate);
 

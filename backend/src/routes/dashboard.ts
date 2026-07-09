@@ -3,7 +3,10 @@ import { pool } from '../db/pool.js';
 import { getRates } from '../currency.js';
 
 export async function dashboardRoutes(app: FastifyInstance) {
-  app.get('/', { onRequest: [app.authenticate] }, async (request: any) => {
+  app.get('/', {
+    schema: { security: [{ bearerAuth: [] }] },
+    onRequest: [app.authenticate],
+  }, async (request: any) => {
     const { rows } = await pool.query(
       `SELECT s.*, c.name as category_name, c.icon as category_icon
        FROM subscriptions s

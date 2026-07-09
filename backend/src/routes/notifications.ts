@@ -16,7 +16,10 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function notificationRoutes(app: FastifyInstance) {
-  app.get('/upcoming', { onRequest: [app.authenticate] }, async (request: any) => {
+  app.get('/upcoming', {
+    schema: { security: [{ bearerAuth: [] }] },
+    onRequest: [app.authenticate],
+  }, async (request: any) => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateStr = tomorrow.toISOString().split('T')[0];
@@ -37,7 +40,10 @@ export async function notificationRoutes(app: FastifyInstance) {
     }));
   });
 
-  app.post('/test-email', { onRequest: [app.authenticate] }, async (request: any, reply: any) => {
+  app.post('/test-email', {
+    schema: { security: [{ bearerAuth: [] }] },
+    onRequest: [app.authenticate],
+  }, async (request: any, reply: any) => {
     if (!env.SMTP_USER || !env.SMTP_PASS) {
       return reply.status(400).send({ error: 'SMTP not configured. Set SMTP_USER and SMTP_PASS in .env' });
     }
